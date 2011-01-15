@@ -1,0 +1,11 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3404
+
+This plugin uses Ajax Google Translator ("http://ajax.googleapis.com/&quot;)
+
+Depending:
+1) Ruby                  (Ubuntu: sudo apt-get install ruby)
+2) Ruby gem json (Ubuntu: sudo gem install json)
+
+Use:
+:Translate Hello World
+
