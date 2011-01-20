@@ -1,29 +1,41 @@
 " Vim plugin file
-" Author:           Maksim Ryzhikov <rv.maaksim@gmail.com>
+" Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.0
+" Version:          1.1
 " ----------------------------------------------------------------------------
 
 if !exists(":Translate")
-	command! -nargs=* Translate call GoogleTranslater('<args>')
+	command! -nargs=* -complet=custom,Gcomplete Translate call GoogleTranslator('<args>')
 endif
 
+func! Gcomplete(A,L,C)
+	let lines = getline(0,'$')
+	let wlist = []
+	for line in lines
+		let words = split(line, '\W\+')
+		if len(words) > 0
+			let wlist = add(wlist,join(words,"\n"))
+		endif
+	endfor
+	let result = join(wlist,"\n")
+	return result
+endfunction
 
-func! GoogleTranslater(...)
+func! GoogleTranslator(...)
 
 	if !has("ruby")
 		echohl ErrorMsg
-		echon "Sorry, Google Translater requires ruby support. And ruby gem json"
+		echon "Sorry, Google Translator requires ruby support. And ruby gem json"
 		finish
 	endif
 
-	if !exists("g:lengpair")
+	if !exists("g:langpair")
 		echohl WarningMsg
-		echon "Use default langpair. You must define g:lengpair in .vimrc"
+		echon "Use default langpair. You must define g:langpair in .vimrc"
 	endif
 
 	let s:query = a:000
-	let s:langpair = exists("g:lengpair") ? g:lengpair : "en|ru"
+	let s:langpair = exists("g:langpair") ? g:langpair : "en|ru"
 
 	func! Query()
 		return s:query
@@ -39,7 +51,7 @@ ruby <<EOF
 	require 'net/http'
 	query = VIM::evaluate('Query()')
 	langpair = VIM::evaluate('Langpair()')
-	base_url = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0"
+	base_url = "http://ajax.googleapis.com/ajax/services/language/translate?v=2.0"
 	url = "#{base_url}&q=#{URI.encode(query)}&langpair=#{URI.encode(langpair)}"
 	resp = Net::HTTP.get_response(URI.parse(url))
 	data = resp.body

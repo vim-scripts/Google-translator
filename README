@@ -2,6 +2,10 @@ This is a mirror of http://www.vim.org/scripts/script.php?script_id=3404
 
 This plugin uses Ajax Google Translator ("http://ajax.googleapis.com/&quot;)
 
+Description:
+This plugin allows you to translate text using the google online translator.
+You can translate as single words and whole blocks using visual-mode.
+
 Depending:
 1) Ruby                  (Ubuntu: sudo apt-get install ruby)
 2) Ruby gem json (Ubuntu: sudo gem install json)
