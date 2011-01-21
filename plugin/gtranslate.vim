@@ -1,13 +1,14 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.1
+" Version:          1.2b
 " ----------------------------------------------------------------------------
 
 if !exists(":Translate")
 	command! -nargs=* -complet=custom,Gcomplete Translate call GoogleTranslator('<args>')
 endif
 
+"Auto-completion for google translator
 func! Gcomplete(A,L,C)
 	let lines = getline(0,'$')
 	let wlist = []
@@ -19,6 +20,20 @@ func! Gcomplete(A,L,C)
 	endfor
 	let result = join(wlist,"\n")
 	return result
+endfunction
+
+"Translate text in visual mod
+if exists("g:vtranslate")
+	let cmd = "vmap ".g:vtranslate." :call BlockTranslate()<cr>"
+	exec cmd
+endif
+func! BlockTranslate()
+	normal! gv"ay
+	"FIXME function call more then once when lines more than one
+	if !exists("s:str") || s:str != @a
+		let s:str = @a
+		call GoogleTranslator(s:str)
+	endif
 endfunction
 
 func! GoogleTranslator(...)
