@@ -1,7 +1,7 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.2b
+" Version:          1.21b
 " ----------------------------------------------------------------------------
 
 if !exists(":Translate")
@@ -24,17 +24,38 @@ endfunction
 
 "Translate text in visual mod
 if exists("g:vtranslate")
-	let cmd = "vmap ".g:vtranslate." :call BlockTranslate()<cr>"
+	nnoremap <silent> <plug>TranslateBlockText :call TranslateBlockText()<cr>
+	vnoremap <silent> <plug>TranslateBlockText <ESC>:call TranslateBlockText()<cr>
+	let cmd = "vmap ".g:vtranslate." <Plug>TranslateBlockText"
 	exec cmd
 endif
+
+
+"-------- new realization--------
+func! TranslateBlockText()
+	let start_v = col("'<") - 1
+	let end_v = col("'>")
+	let lines = getline("'<","'>")
+
+	if len(lines) > 1
+		let lines[0] = strpart(lines[0],start_v)
+		let lines[-1] = strpart(lines[-1],0,end_v)
+		let str = join(lines)
+	else
+		let str = strpart(lines[0],start_v,end_v-start_v)
+	endif
+
+	call GoogleTranslator(str)
+endfunction
+
+
+"-------- old realization--------
 func! BlockTranslate()
 	normal! gv"ay
-	"FIXME function call more then once when lines more than one
-	if !exists("s:str") || s:str != @a
-		let s:str = @a
-		call GoogleTranslator(s:str)
-	endif
+	let s:str = @a
+	call GoogleTranslator(s:str)
 endfunction
+"-------------------------------
 
 func! GoogleTranslator(...)
 
@@ -60,9 +81,11 @@ func! GoogleTranslator(...)
 		return s:langpair
 	endfunction
 
+"Add cgi library for unescape text
 ruby <<EOF
 	require 'rubygems'
 	require 'json'
+	require 'cgi'
 	require 'net/http'
 	query = VIM::evaluate('Query()')
 	langpair = VIM::evaluate('Langpair()')
@@ -71,7 +94,7 @@ ruby <<EOF
 	resp = Net::HTTP.get_response(URI.parse(url))
 	data = resp.body
 	result = JSON.parse(data)
-	text = (result['responseStatus'] == 200) ? result['responseData']['translatedText'] : "Invalid translation..."
+	text = (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']) : "Invalid translation..."
 	VIM::message(text)
 EOF
 endfunction
