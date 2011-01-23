@@ -1,7 +1,7 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.2b
+" Version:          1.21b
 " ----------------------------------------------------------------------------
 
 if !exists(":Translate")
@@ -24,14 +24,15 @@ endfunction
 
 "Translate text in visual mod
 if exists("g:vtranslate")
-	"let cmd = "vmap ".g:vtranslate." :call BlockTranslate()<cr>"
-	nnoremap <silent> <plug>BlockTextTranslate :call BlockTextTranslate()<cr>
-	vnoremap <silent> <plug>BlockTextTranslate <ESC>:call BlockTextTranslate()<cr>
-	let cmd = "vmap ".g:vtranslate." <Plug>BlockTextTranslate"
+	nnoremap <silent> <plug>TranslateBlockText :call TranslateBlockText()<cr>
+	vnoremap <silent> <plug>TranslateBlockText <ESC>:call TranslateBlockText()<cr>
+	let cmd = "vmap ".g:vtranslate." <Plug>TranslateBlockText"
 	exec cmd
 endif
 
-func! BlockTextTranslate()
+
+"-------- new realization--------
+func! TranslateBlockText()
 	let start_v = col("'<") - 1
 	let end_v = col("'>")
 	let lines = getline("'<","'>")
@@ -49,15 +50,14 @@ endfunction
 
 
 "-------- old realization--------
-"func! BlockTranslate()
-	"normal! gv"ay
-	""FIXME function call more then once when lines more than one
-	"if !exists("s:str") || s:str != @a
-		"let s:str = @a
-		"call GoogleTranslator(s:str)
-	"endif
-"endfunction
+func! BlockTranslate()
+	normal! gv"ay
+	let s:str = @a
+	call GoogleTranslator(s:str)
+endfunction
+"-------------------------------
 
+"FIXME max chars in request 1434
 func! GoogleTranslator(...)
 
 	if !has("ruby")
