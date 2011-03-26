@@ -1,8 +1,11 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.21b
+" Version:          1.2.3
 " ----------------------------------------------------------------------------
+" Settings:
+"          let g:vtranslate="T"       note: Translate selected text in visual-mode
+"          :echohl <TAB>              note: Color tranlated text
 
 if !exists(":Translate")
 	command! -nargs=* -complet=custom,Gcomplete Translate call GoogleTranslator('<args>')
@@ -57,7 +60,6 @@ func! BlockTranslate()
 endfunction
 "-------------------------------
 
-"FIXME max chars in request 1434
 func! GoogleTranslator(...)
 
 	if !has("ruby")
@@ -82,20 +84,39 @@ func! GoogleTranslator(...)
 		return s:langpair
 	endfunction
 
-"Add cgi library for unescape text
+	call s:_cmdOutputText()
+
+endfunction
+
+func! s:_cmdOutputText()
+
 ruby <<EOF
 	require 'rubygems'
 	require 'json'
 	require 'cgi'
 	require 'net/http'
+
+	@max_length = 1000.0
 	query = VIM::evaluate('Query()')
 	langpair = VIM::evaluate('Langpair()')
 	base_url = "http://ajax.googleapis.com/ajax/services/language/translate?v=2.0"
-	url = "#{base_url}&q=#{URI.encode(query)}&langpair=#{URI.encode(langpair)}"
-	resp = Net::HTTP.get_response(URI.parse(url))
-	data = resp.body
-	result = JSON.parse(data)
-	text = (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']) : "Invalid translation..."
-	VIM::message(text)
+
+	len = (query.length/@max_length).ceil
+	text = ""
+	for i in (1..len)
+		qry = query[(i-1)*@max_length..i*@max_length]
+		url = "#{base_url}&q=#{URI.escape(qry)}&langpair=#{URI.escape(langpair)}"
+		resp = Net::HTTP.get_response(URI.parse(url))
+		data = resp.body
+		result = JSON.parse(data)
+		text += (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']).gsub("'","\"") : "Invalid translation..."
+	end
+
+	VIM::evaluate("ViewTranlatedText('#{text}')")
 EOF
+
+endfunction
+
+func! ViewTranlatedText(text)
+		echon a:text
 endfunction
