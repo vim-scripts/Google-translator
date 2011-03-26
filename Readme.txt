@@ -12,3 +12,7 @@ Add your .vimrc file string [ let g:lengpair="en|ru" ] whre "en" <- form English
 
 Use:
 :Translate Hello World
+
+About Jstranslate. (BETA)
+This new implementation "Google Translator" for Vim. It is written in javascript and XPCOM.
+To use it is necessary to have installed "xpcshell"
