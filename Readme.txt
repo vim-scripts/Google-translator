@@ -16,3 +16,5 @@ Use:
 About Jstranslate. (BETA)
 This new implementation "Google Translator" for Vim. It is written in javascript and XPCOM.
 To use it is necessary to have installed "xpcshell"
+path to js file ~/.vim/bundle/vim-gtranslate/plugin/js/simple.js
+:Jstranslate Hello World

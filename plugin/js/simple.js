@@ -27,7 +27,7 @@ var app = {
 };
 /*
  * This function responsible for translate.
- * @params hl, tl, text*
+ * @params [hl, tl, text*]
  */
 (function (args) {
   var hl = args[0];
