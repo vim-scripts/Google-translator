@@ -16,3 +16,5 @@ Depending:
 Use:
 :Translate Hello World
 
+You can use plugin fork http://www.vim.org/scripts/script.php?script_id=3545
+he uses gem google-translate
