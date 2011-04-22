@@ -12,6 +12,6 @@ func! JsTranslator(...)
 	let hl = strpart(langpair,0,2)
 	let tl = strpart(langpair,3)
 	let query = string(a:000)
-	let result = system("xpcshell ~/.vim/bundle/vim-gtranslate/plugin/js/simple.js ".hl." ".tl." ".query)
+	let result = system("xpcshell ~/.vim/bundle/vim-gtranslate/plugin/js/translate.js ".hl." ".tl." ".query)
 	echo result
 endfunction

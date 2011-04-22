@@ -1,7 +1,7 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
-" Maintainer:		Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.2.3
+" Maintainer:		    Maksim Ryzhikov <rv.maksim@gmail.com>
+" Version:          1.2.4
 " ----------------------------------------------------------------------------
 " Settings:
 "          let g:vtranslate="T"       note: Translate selected text in visual-mode
@@ -34,7 +34,6 @@ if exists("g:vtranslate")
 endif
 
 
-"-------- new realization--------
 func! TranslateBlockText()
 	let start_v = col("'<") - 1
 	let end_v = col("'>")
@@ -49,16 +48,8 @@ func! TranslateBlockText()
 	endif
 
 	call GoogleTranslator(str)
+	"call JsTranslator(str)
 endfunction
-
-
-"-------- old realization--------
-func! BlockTranslate()
-	normal! gv"ay
-	let s:str = @a
-	call GoogleTranslator(s:str)
-endfunction
-"-------------------------------
 
 func! GoogleTranslator(...)
 
@@ -91,7 +82,8 @@ endfunction
 func! s:_cmdOutputText()
 
 ruby <<EOF
-	require 'rubygems'
+	check_version = RUBY_VERSION =~ /1\.9/
+	require 'rubygems' unless check_version != nil
 	require 'json'
 	require 'cgi'
 	require 'net/http'
@@ -109,7 +101,7 @@ ruby <<EOF
 		resp = Net::HTTP.get_response(URI.parse(url))
 		data = resp.body
 		result = JSON.parse(data)
-		text += (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']).gsub("'","\"") : "Invalid translation..."
+		text += (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']).to_s.gsub("'","\"") : "Invalid translation..."
 	end
 
 	VIM::evaluate("ViewTranlatedText('#{text}')")
