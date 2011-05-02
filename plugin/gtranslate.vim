@@ -1,7 +1,7 @@
 " Vim plugin file
 " Author:           Maksim Ryzhikov <rv.maksim@gmail.com>
 " Maintainer:		    Maksim Ryzhikov <rv.maksim@gmail.com>
-" Version:          1.2.4
+" Version:          1.2.6
 " ----------------------------------------------------------------------------
 " Settings:
 "          let g:vtranslate="T"       note: Translate selected text in visual-mode
@@ -88,23 +88,29 @@ ruby <<EOF
 	require 'cgi'
 	require 'net/http'
 
-	@max_length = 1000.0
-	query = VIM::evaluate('Query()')
-	langpair = VIM::evaluate('Langpair()')
-	base_url = "http://ajax.googleapis.com/ajax/services/language/translate?v=2.0"
-
-	len = (query.length/@max_length).ceil
-	text = ""
-	for i in (1..len)
-		qry = query[(i-1)*@max_length..i*@max_length]
-		url = "#{base_url}&q=#{URI.escape(qry)}&langpair=#{URI.escape(langpair)}"
-		resp = Net::HTTP.get_response(URI.parse(url))
-		data = resp.body
-		result = JSON.parse(data)
-		text += (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']).to_s.gsub("'","\"") : "Invalid translation..."
+	class Translator
+		def translate(langpair,query)
+			max_length = 1000.0
+			base_url = "http://ajax.googleapis.com/ajax/services/language/translate?v=2.0"
+			len = (query.length/max_length).ceil
+			text = ""
+			for i in (1..len)
+				qry = query.slice!(0..max_length)
+				url = "#{base_url}&q=#{URI.escape(qry)}&langpair=#{URI.escape(langpair)}"
+				resp = Net::HTTP.get_response(URI.parse(url))
+				data = resp.body
+				result = JSON.parse(data)
+				text += (result['responseStatus'] == 200) ? CGI.unescapeHTML(result['responseData']['translatedText']).gsub("'","\"") : "Invalid translation..."
+			end
+			return text
+		end
 	end
 
-	VIM::evaluate("ViewTranlatedText('#{text}')")
+	query = VIM::evaluate('Query()').to_s
+	langpair = VIM::evaluate('Langpair()')
+	translator = Translator.new
+
+	VIM::evaluate("ViewTranlatedText('#{translator.translate(langpair,query)}')")
 EOF
 
 endfunction
