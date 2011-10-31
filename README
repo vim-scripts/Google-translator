@@ -11,7 +11,7 @@ With a large number of text program can take some time
 
 Depending:
 1) Ruby                  (Ubuntu: sudo apt-get install ruby)
-2) Ruby gem json (Ubuntu: sudo gem install json)
+2) Ruby gem json (Ubuntu: sudo gem install json) only for 1.2 versions
 
 Use:
 :Translate Hello World
