@@ -1,20 +1,9 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=3404
 
-This plugin uses Ajax Google Translator ("http://ajax.googleapis.com/&quot;)
+This plugin allow translate text in vim using google translator.
+You may translate both single words and whole blocks using visual mode.
 
-Description:
-This plugin allows you to translate text using the google online translator.
-You can translate as single words and whole blocks using visual-mode.
+More details on github.
+Latest version is located on github (https://github.com/maksimr/vim-translator).
+Maksim.
 
-Note: 
-With a large number of text program can take some time
-
-Depending:
-1) Ruby                  (Ubuntu: sudo apt-get install ruby)
-2) Ruby gem json (Ubuntu: sudo gem install json) only for 1.2 versions
-
-Use:
-:Translate Hello World
-
-You can use plugin fork http://www.vim.org/scripts/script.php?script_id=3545
-he uses gem google-translate

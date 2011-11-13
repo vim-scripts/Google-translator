@@ -1,10 +1,9 @@
 " AUTHOR:     Maksim Ryzhikov
 " Maintainer: Maksim Ryzhikov <rv.maksim@gmail.com>
-" VERSION:    1.3.0b
-" DONE: remove json dependency, g:vtranslate, g:langpair
+" VERSION:    1.3.1b
+" DONE: remove json dependency, g:vtranslate, g:langpair, fix encoding
 " ADD: configuration variable
-" TODO: fix output text with quotes, some problem with encoding, add
-" implementation on javascript for v8 and nodejs
+" TODO: fix output text with quotes in nodejs
 
 "@configuration
 function! s:googMergeConf(gconf,uconf)
@@ -15,7 +14,7 @@ function! s:googMergeConf(gconf,uconf)
   endif
 endfunction
 
-let s:goog_conf = { 'charset': 'utf-8', 'langpair' : 'en|ru'}
+let s:goog_conf = { 'langpair' : 'en|ru', 'cmd' : 'ruby'}
 
 
 "@complete
@@ -56,13 +55,31 @@ endfunction
 function! s:GoogTranslate(...)
   "define variable
   let s:query = a:000
+  let outp = ""
 
   "call sub translator
-  let outp = s:_googRBTranslate(s:query)
+  if s:goog_conf.cmd == "ruby"
+    let outp = s:_googRBTranslate(s:query)
+  elseif s:goog_conf.cmd == "node"
+    let outp = system("node ~/.vim/bundle/vim-translator/plugin/js/goog-translator-coffee.js ".string(s:query).' '.string(s:goog_conf.langpair))
+  elseif s:goog_conf.cmd == "lua"
+    let outp = s:_googLuaTranslate(s:query)
+  endif
 
-  echo iconv(outp,s:goog_conf.charset,&enc)
+  if has_key(s:goog_conf, 'charset')
+    echo iconv(outp,s:goog_conf.charset,&enc)
+  else
+    echo outp
+  endif
 
   return outp
+endfunction
+
+"sub translator is implemented on lua
+"@return String
+function! s:_googLuaTranslate(query)
+    silent! exec "luafile ~/.vim/bundle/vim-translator/plugin/goog-translator.lua"
+    return s:outp
 endfunction
 
 "sub translator is implemented on ruby
@@ -87,8 +104,14 @@ ruby <<EOF
       attr_accessor :langpair
 
       def translate(text)
-        url = construct_uri(text)
-        jstxt = Net::HTTP.get(URI.parse(url))
+        url = URI.parse(path(text))
+        http = Net::HTTP.new(url.host,url.port)
+        req = Net::HTTP::Get.new(url.request_uri)
+        req.initialize_http_header({
+          'User-Agent' => 'Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1'
+        })
+
+        jstxt = http.request(req).body
         resp = eval(jstxt.gsub(/,{2,}/,","))
 
         CGI.unescapeHTML(resp.first.first.first)
@@ -99,15 +122,14 @@ ruby <<EOF
       end
 
       protected
-
       def host
-        @host ||= "http://translate.google.com/translate_a/t?client=t&text="
+        @host ||= "http://translate.google.com"
       end
 
-      def construct_uri(text)
+      def path(text)
         hl, tl = langpair.split("|")
         sl = hl
-        %Q{#{host}#{CGI.escape(text)}&hl=#{hl}&sl=#{sl}&tl=#{tl}&multires=1&otf=1&trs=1&sc=1}
+        %Q{#{host}/translate_a/t?client=t&text=#{CGI.escape(text)}&hl=#{hl}&sl=#{sl}&tl=#{tl}&multires=1&otf=1&trs=1&sc=1}
       end
     end
   end
